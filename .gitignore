@@ -1,0 +1,22 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Freqtrade — 機密與產出物，切勿提交
+user_data/config*.json
+user_data/data/
+user_data/backtest_results/
+user_data/hyperopt_results/
+user_data/logs/
+user_data/plot/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+!user_data/config.example.json
