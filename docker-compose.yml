@@ -7,8 +7,9 @@
 # 看 log：docker compose logs -f      （或 make logs）
 # 停止：  docker compose down         （或 make down）
 #
-# UI 預設只綁在 host 的 127.0.0.1，請用 SSH tunnel 連線（見 docs/DEPLOY.md），
-# 不要直接曝露到公網（config.json 的 UI 帳密是練習用弱密碼）。
+# UI port 對外發佈（0.0.0.0）。公網安全性靠雲端防火牆的「來源 IP 白名單」把關
+# （如 Lightsail：限制 8080-8082 只允許你的固定 IP）。仍建議換掉 config.json 的弱密碼。
+# 若改回只走 SSH tunnel，把各 service 的 "8080:8080" 改成 "127.0.0.1:8080:8080"。
 
 x-ft-common: &ft-common
   # 建議改成與本機 `uv run freqtrade --version` 相同的版本 tag 以求可重現，
@@ -33,7 +34,7 @@ services:
     <<: *ft-common
     container_name: ft-donchian
     ports:
-      - "127.0.0.1:8080:8080"
+      - "8080:8080"
     command: >
       trade
       --config /freqtrade/user_data/config.json
@@ -44,7 +45,7 @@ services:
     <<: *ft-common
     container_name: ft-ema-trend
     ports:
-      - "127.0.0.1:8081:8081"
+      - "8081:8081"
     command: >
       trade
       --config /freqtrade/user_data/config.json
@@ -54,7 +55,7 @@ services:
     <<: *ft-common
     container_name: ft-vol-breakout
     ports:
-      - "127.0.0.1:8082:8082"
+      - "8082:8082"
     command: >
       trade
       --config /freqtrade/user_data/config.json
