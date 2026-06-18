@@ -96,6 +96,23 @@ trade3: ## 啟動第三個 dry-run bot（VolBreakout 短線 DOGE/XRP，port 8082
 webserver: ## 只開 Web 伺服器（回測分析用，不下單）
 	$(FT) webserver --config $(CONFIG)
 
+# ---- 雲端常駐部署（Docker Compose，見 docs/DEPLOY.md）------------------------
+.PHONY: up
+up: ## 背景常駐啟動三個 dry-run bot（VPS 用）
+	docker compose up -d
+
+.PHONY: down
+down: ## 停止並移除常駐容器（sqlite 錢包保留）
+	docker compose down
+
+.PHONY: logs
+logs: ## 追三個常駐 bot 的即時 log（Ctrl-C 只離開 log，不停 bot）
+	docker compose logs -f
+
+.PHONY: ps
+ps: ## 查看常駐 bot 狀態
+	docker compose ps
+
 # ---- 開發 -------------------------------------------------------------------
 .PHONY: new-strategy
 new-strategy: ## 建新策略範本，需帶 NAME=MyStrategy

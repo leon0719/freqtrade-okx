@@ -1,0 +1,61 @@
+# freqtrade-okx — 三個 dry-run bot 常駐部署（VPS / 任何 Docker 主機）
+#
+# 用官方 freqtrade image（已內含 TA-Lib / CCXT，免自行編譯）。
+# 三個 service 共用同一份 user_data，各自獨立策略 / port / sqlite 錢包。
+#
+# 啟動：  docker compose up -d        （或 make up）
+# 看 log：docker compose logs -f      （或 make logs）
+# 停止：  docker compose down         （或 make down）
+#
+# UI 預設只綁在 host 的 127.0.0.1，請用 SSH tunnel 連線（見 docs/DEPLOY.md），
+# 不要直接曝露到公網（config.json 的 UI 帳密是練習用弱密碼）。
+
+x-ft-common: &ft-common
+  # 建議改成與本機 `uv run freqtrade --version` 相同的版本 tag 以求可重現，
+  # 例如 freqtradeorg/freqtrade:2026.5。預設用 stable。
+  image: freqtradeorg/freqtrade:stable
+  restart: unless-stopped
+  volumes:
+    - ./user_data:/freqtrade/user_data
+  environment:
+    # 容器內必須聽 0.0.0.0 才能透過 docker port 對外；不改動本機 config.json。
+    - FREQTRADE__API_SERVER__LISTEN_IP_ADDRESS=0.0.0.0
+  # 容器健康檢查：API server 回應即視為存活
+  stop_grace_period: 30s
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+services:
+  donchian:
+    <<: *ft-common
+    container_name: ft-donchian
+    ports:
+      - "127.0.0.1:8080:8080"
+    command: >
+      trade
+      --config /freqtrade/user_data/config.json
+      --strategy DonchianBreakout
+      --db-url sqlite:////freqtrade/user_data/donchian.dryrun.sqlite
+
+  ema-trend:
+    <<: *ft-common
+    container_name: ft-ema-trend
+    ports:
+      - "127.0.0.1:8081:8081"
+    command: >
+      trade
+      --config /freqtrade/user_data/config.json
+      --config /freqtrade/user_data/ema-trend.json
+
+  vol-breakout:
+    <<: *ft-common
+    container_name: ft-vol-breakout
+    ports:
+      - "127.0.0.1:8082:8082"
+    command: >
+      trade
+      --config /freqtrade/user_data/config.json
+      --config /freqtrade/user_data/vol-breakout.json
