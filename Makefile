@@ -88,6 +88,10 @@ trade: ## 啟動模擬盤 dry-run（同時開 Web UI，http://127.0.0.1:8080）
 trade2: ## 啟動第二個 dry-run bot（EmaTrendFollow，獨立錢包，port 8081）
 	$(FT) trade --config $(CONFIG) --config user_data/ema-trend.json
 
+.PHONY: trade3
+trade3: ## 啟動第三個 dry-run bot（VolBreakout 短線 DOGE/XRP，port 8082）
+	$(FT) trade --config $(CONFIG) --config user_data/vol-breakout.json
+
 .PHONY: webserver
 webserver: ## 只開 Web 伺服器（回測分析用，不下單）
 	$(FT) webserver --config $(CONFIG)
