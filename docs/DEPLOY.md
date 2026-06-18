@@ -6,6 +6,43 @@
 > 仍是 **dry-run（模擬盤）**，不碰真錢，也不需要 OKX API key。
 > 之後若要實盤，再依 `CLAUDE.md` 的實盤檢查清單調整。
 
+---
+
+## 最小部署 checklist（懶人包）
+
+VPS 已裝好 Docker 的前提下，從零到三個 bot 常駐只要這幾步。每步細節見下方對應章節。
+
+```bash
+# 1. 取得程式碼（strategies / docker-compose.yml / Makefile 都在 git 裡）
+git clone <你的 repo> freqtrade-okx && cd freqtrade-okx
+
+# 2. 傳上唯一沒進 git 的機密設定（含 UI 帳密 / jwt_secret_key）
+scp user_data/config.json <user>@<vps>:~/freqtrade-okx/user_data/config.json
+
+# 3. ⚠️ 關鍵：官方 image 以 uid 1000 執行，要讓它能寫 user_data（否則 sqlite 寫不了、bot 報錯）
+sudo chown -R 1000:1000 user_data
+
+# 4. 啟動三個 dry-run bot
+make up            # = docker compose up -d
+
+# 5. 驗證
+make ps            # 三個容器都 Up？
+make logs          # 有正常連上 OKX、無 permission error？
+```
+
+連 Web UI：從本機開 SSH tunnel（見「五、連 Web UI」），瀏覽器開 localhost:8080/8081/8082。
+
+**不需要做的事**：不用 `make download`（dry-run 會即時抓 K 線）、不用填 OKX API key（不下真單）、
+不用改 config.json 的 listen_ip / port（已由 docker-compose 環境變數與 port mapping 處理）。
+
+**公網部署前必做**：換掉 `config.json` 的 UI `username` / `password`（目前 `leon` / `aaaaa`）
+與 `jwt_secret_key`。預設 port 只綁 `127.0.0.1` 走 tunnel 已相對安全，但換掉才保險。
+
+> 前提（只需一次）：VPS 裝 Docker（`curl -fsSL https://get.docker.com | sh`）；
+> 要用 `make` 指令需 `sudo apt install make`，沒裝就直接用 `docker compose up -d` / `ps` / `logs -f`。
+
+---
+
 ## 為什麼不用 Cloudflare Worker
 
 Worker 是「定時觸發、跑幾秒就結束」的短命無狀態模型（像 `line-daily-report`），
