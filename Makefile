@@ -84,6 +84,10 @@ recursive: ## 檢查指標遞迴穩定性（recursive bias）
 trade: ## 啟動模擬盤 dry-run（同時開 Web UI，http://127.0.0.1:8080）
 	$(FT) trade --config $(CONFIG) -s $(STRAT)
 
+.PHONY: trade2
+trade2: ## 啟動第二個 dry-run bot（EmaTrendFollow，獨立錢包，port 8081）
+	$(FT) trade --config $(CONFIG) --config user_data/ema-trend.json
+
 .PHONY: webserver
 webserver: ## 只開 Web 伺服器（回測分析用，不下單）
 	$(FT) webserver --config $(CONFIG)

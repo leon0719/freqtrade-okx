@@ -4,7 +4,7 @@
     "stake_currency": "USDT",
     "stake_amount": 100,
     "tradable_balance_ratio": 0.99,
-    "fiat_display_currency": "USD",
+    "fiat_display_currency": "",
     "dry_run": true,
     "dry_run_wallet": 1000,
     "cancel_open_orders_on_exit": true,
@@ -63,7 +63,7 @@
         "enable_openapi": false,
         "jwt_secret_key": "change_me_to_a_random_32char_min_secret_0123456789",
         "ws_token": "change_me_to_a_random_ws_token_string",
-        "CORS_origins": [],
+        "CORS_origins": ["http://127.0.0.1:8080", "http://127.0.0.1:8081", "http://localhost:8080", "http://localhost:8081"],
         "username": "freqtrader",
         "password": "CHANGE_ME"
     },

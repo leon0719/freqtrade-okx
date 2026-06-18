@@ -1,0 +1,9 @@
+{
+    "$schema": "https://schema.freqtrade.io/schema.json",
+    "strategy": "EmaTrendFollow",
+    "bot_name": "ema-trend",
+    "db_url": "sqlite:///user_data/ema-trend.dryrun.sqlite",
+    "api_server": {
+        "listen_port": 8081
+    }
+}
