@@ -7,8 +7,8 @@
 # ---- 可覆寫變數 -------------------------------------------------------------
 FT        := uv run freqtrade
 CONFIG    := user_data/config.json
-STRAT     := SampleStrategy
-TF        := 5m
+STRAT     := DonchianBreakout
+TF        := 1h
 PAIRS     := BTC/USDT ETH/USDT SOL/USDT
 DAYS      := 30
 TIMERANGE :=
@@ -31,10 +31,6 @@ help: ## 顯示這份說明
 	@echo "可覆寫變數：STRAT=$(STRAT)  TF=$(TF)  DAYS=$(DAYS)  PAIRS='$(PAIRS)'"
 
 # ---- 環境 / 設定 ------------------------------------------------------------
-.PHONY: install-ui
-install-ui: ## 安裝 / 更新 FreqUI 前端
-	$(FT) install-ui
-
 .PHONY: config
 config: ## 驗證並顯示解析後的設定
 	$(FT) show-config --config $(CONFIG)
@@ -42,10 +38,6 @@ config: ## 驗證並顯示解析後的設定
 .PHONY: strategies
 strategies: ## 列出可用策略
 	$(FT) list-strategies --config $(CONFIG)
-
-.PHONY: pairlist
-pairlist: ## 測試 pairlist 設定
-	$(FT) test-pairlist --config $(CONFIG)
 
 # ---- 資料 -------------------------------------------------------------------
 .PHONY: download
@@ -58,8 +50,8 @@ list-data: ## 列出已下載的資料
 
 # ---- 回測 / 最佳化 ----------------------------------------------------------
 .PHONY: backtest
-backtest: ## 回測（可帶 TIMERANGE=20260518-）
-	$(FT) backtesting --config $(CONFIG) -s $(STRAT) --timeframe $(TF) $(TR_ARG)
+backtest: ## 回測（可帶 TIMERANGE=20260518-）；--export signals 供 backtest-analysis 用
+	$(FT) backtesting --config $(CONFIG) -s $(STRAT) --timeframe $(TF) $(TR_ARG) --export signals
 
 .PHONY: backtest-show
 backtest-show: ## 顯示最近一次回測結果
@@ -78,18 +70,19 @@ hyperopt: ## 超參數最佳化（可改 LOSS / EPOCHS / SPACES）
 hyperopt-show: ## 顯示最佳 hyperopt 結果
 	$(FT) hyperopt-show --config $(CONFIG) --best
 
-# ---- 圖表 -------------------------------------------------------------------
-.PHONY: plot-profit
-plot-profit: ## 產生獲利曲線圖（輸出到 user_data/plot）
-	$(FT) plot-profit --config $(CONFIG) -s $(STRAT) $(TR_ARG)
+# ---- 分析（找出哪些訊號賺賠、優化進出場）------------------------------------
+.PHONY: backtest-analysis
+backtest-analysis: ## 分析最近一次回測的進出場原因（需先 make backtest）
+	$(FT) backtesting-analysis --config $(CONFIG) --analysis-groups 0 1 2 3 4
+
+.PHONY: recursive
+recursive: ## 檢查指標遞迴穩定性（recursive bias）
+	$(FT) recursive-analysis --config $(CONFIG) -s $(STRAT) $(TR_ARG)
 
 # ---- 模擬盤 / UI ------------------------------------------------------------
 .PHONY: trade
 trade: ## 啟動模擬盤 dry-run（同時開 Web UI，http://127.0.0.1:8080）
 	$(FT) trade --config $(CONFIG) -s $(STRAT)
-
-.PHONY: ui
-ui: trade ## trade 的別名：開模擬盤 + Web UI
 
 .PHONY: webserver
 webserver: ## 只開 Web 伺服器（回測分析用，不下單）
