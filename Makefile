@@ -84,21 +84,13 @@ recursive: ## 檢查指標遞迴穩定性（recursive bias）
 trade: ## 啟動模擬盤 dry-run（同時開 Web UI，http://127.0.0.1:8080）
 	$(FT) trade --config $(CONFIG) -s $(STRAT)
 
-.PHONY: trade2
-trade2: ## 啟動第二個 dry-run bot（EmaTrendFollow，獨立錢包，port 8081）
-	$(FT) trade --config $(CONFIG) --config user_data/ema-trend.json
-
-.PHONY: trade3
-trade3: ## 啟動第三個 dry-run bot（VolBreakout 短線 DOGE/XRP，port 8082）
-	$(FT) trade --config $(CONFIG) --config user_data/vol-breakout.json
-
 .PHONY: webserver
 webserver: ## 只開 Web 伺服器（回測分析用，不下單）
 	$(FT) webserver --config $(CONFIG)
 
 # ---- 雲端常駐部署（Docker Compose，見 docs/DEPLOY.md）------------------------
 .PHONY: up
-up: ## 背景常駐啟動三個 dry-run bot（VPS 用）
+up: ## 背景常駐啟動 dry-run bot（VPS 用）
 	docker compose up -d
 
 .PHONY: down
@@ -106,7 +98,7 @@ down: ## 停止並移除常駐容器（sqlite 錢包保留）
 	docker compose down
 
 .PHONY: logs
-logs: ## 追三個常駐 bot 的即時 log（Ctrl-C 只離開 log，不停 bot）
+logs: ## 追常駐 bot 的即時 log（Ctrl-C 只離開 log，不停 bot）
 	docker compose logs -f
 
 .PHONY: ps

@@ -1,14 +1,14 @@
-# freqtrade-okx — 三個 dry-run bot 常駐部署（VPS / 任何 Docker 主機）
+# freqtrade-okx — dry-run bot 常駐部署（VPS / 任何 Docker 主機）
 #
 # 用官方 freqtrade image（已內含 TA-Lib / CCXT，免自行編譯）。
-# 三個 service 共用同一份 user_data，各自獨立策略 / port / sqlite 錢包。
+# 單一 DonchianBreakout service，獨立 sqlite 錢包。
 #
 # 啟動：  docker compose up -d        （或 make up）
 # 看 log：docker compose logs -f      （或 make logs）
 # 停止：  docker compose down         （或 make down）
 #
 # UI port 對外發佈（0.0.0.0）。公網安全性靠雲端防火牆的「來源 IP 白名單」把關
-# （如 Lightsail：限制 8080-8082 只允許你的固定 IP）。仍建議換掉 config.json 的弱密碼。
+# （如 Lightsail：限制 8080 只允許你的固定 IP）。仍建議換掉 config.json 的弱密碼。
 # 若改回只走 SSH tunnel，把各 service 的 "8080:8080" 改成 "127.0.0.1:8080:8080"。
 
 x-ft-common: &ft-common
@@ -40,23 +40,3 @@ services:
       --config /freqtrade/user_data/config.json
       --strategy DonchianBreakout
       --db-url sqlite:////freqtrade/user_data/donchian.dryrun.sqlite
-
-  ema-trend:
-    <<: *ft-common
-    container_name: ft-ema-trend
-    ports:
-      - "8081:8081"
-    command: >
-      trade
-      --config /freqtrade/user_data/config.json
-      --config /freqtrade/user_data/ema-trend.json
-
-  vol-breakout:
-    <<: *ft-common
-    container_name: ft-vol-breakout
-    ports:
-      - "8082:8082"
-    command: >
-      trade
-      --config /freqtrade/user_data/config.json
-      --config /freqtrade/user_data/vol-breakout.json

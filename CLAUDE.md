@@ -58,15 +58,11 @@ make clean-all                    # clean + clean-results
   目前工作目錄保留的策略，反映研究脈絡（落選實驗檔已移除，但留在初始 commit `9f0d171`，
   需回顧可 `git show 9f0d171:user_data/strategies/<檔名>.py`）。研究決定性結論：**均值回歸（接刀）
   在過去市場全面失血，改走順勢；短 timeframe 唯有「高波動幣＋量能確認」才做得出來**。
-  三個 dry-run bot 各跑一個策略（見 Makefile `trade` / `trade2` / `trade3`，port 8080/8081/8082）：
-  - `DonchianBreakout`（bot1，1h，預設 `STRAT`）：通道突破順勢 + 趨勢 EMA + 熊市 regime filter，
-    讓利潤奔跑（roi 關閉，靠 trailing 出場）。**研究最佳基準**（全期 +16.56%、Calmar 4.78），新策略對照標的。
-  - `EmaTrendFollow`（bot2，1h，`ema-trend.json`）：快慢 EMA 黃金/死亡交叉，與 Donchian 同配方
-    但訊號維度不同（動能交叉 vs 價格突破），作**互補對照**。採 default 經典參數。
-  - `VolBreakout`（bot3，15m，`vol-breakout.json`，pairlist=DOGE/XRP）：放量突破短線，加**量能確認**
-    過濾無量假突破。**研究至今最佳且證明短線可行**（DOGE+XRP 全期 +25.16%）。
-  - `DonchianBreakout15m`（未載入）：Donchian 配方搬到 15m 的**失敗對照**（樣本外崩 -10.91%），
-    刻意保留作「短 timeframe 在 BTC/ETH/SOL 難賺」的反證，不應拿去 dry-run。
+  目前只保留單一最佳策略 `DonchianBreakout`（見 Makefile `trade`，port 8080）：
+  - `DonchianBreakout`（1h，預設 `STRAT`，pairlist=BTC/ETH/SOL）：通道突破順勢 + 趨勢 EMA + 熊市 regime filter，
+    讓利潤奔跑（roi 關閉，靠 trailing 出場）。**研究最佳基準**（全期 +16.56%、Calmar 4.78）。
+  - 先前的對照策略（`EmaTrendFollow`、`VolBreakout` DOGE/XRP 短線、`DonchianBreakout15m`）已移除，
+    需回顧可從 git 歷史 `git show <commit>:user_data/strategies/<檔名>.py` 取回。
 - **設定**：`user_data/config.json` 是實際設定（含 API key 與帳密，已 gitignore）；
   `config.example.json` 是可提交範本。交易所固定 `okx`、`trading_mode: spot`、`dry_run: true`。
   改 pairlist、stake、UI 帳密都在這裡。
