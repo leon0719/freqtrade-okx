@@ -15,3 +15,8 @@ dependencies = [
 dev = [
     "ruff>=0.15.17",
 ]
+
+[tool.ruff]
+# 第三方 vendored 策略（NostalgiaForInfinityX7，73k 行）跟隨官方 repo 更新，不自行 lint/改動。
+# 其餘維持 ruff 預設規則（無自訂 select/ignore）。
+extend-exclude = ["user_data/strategies/NostalgiaForInfinityX7.py"]

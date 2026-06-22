@@ -58,17 +58,25 @@ make clean-all                    # clean + clean-results
   目前工作目錄保留的策略，反映研究脈絡（落選實驗檔已移除，但留在初始 commit `9f0d171`，
   需回顧可 `git show 9f0d171:user_data/strategies/<檔名>.py`）。研究決定性結論：**均值回歸（接刀）
   在過去市場全面失血，改走順勢；短 timeframe 唯有「高波動幣＋量能確認」才做得出來**。
-  目前只保留單一最佳策略 `DonchianBreakout`（見 Makefile `trade`，port 8080）：
-  - `DonchianBreakout`（1h，預設 `STRAT`，pairlist=BTC/ETH/SOL）：通道突破順勢 + 趨勢 EMA + 熊市 regime filter，
-    讓利潤奔跑（roi 關閉，靠 trailing 出場）。**研究最佳基準**（全期 +16.56%、Calmar 4.78）。
+  目前自研主力是 `DonchianBreakout`，另接一支社群策略當對照組（`make up` 雙 bot 並行）：
+  - `DonchianBreakout`（1h，預設 `STRAT`，pairlist=BTC/ETH/SOL，config.json，port 8080）：通道突破順勢
+    + 趨勢 EMA + 熊市 regime filter，讓利潤奔跑（roi 關閉，靠 trailing 出場）。**研究最佳基準**
+    （全期 +16.56%、Calmar 4.78；注意該數字是樂觀成本下的舊期間，加真實成本後近期 180 天回測為負）。
+  - `NostalgiaForInfinityX7`（5m，config.nfi.json，port 8081）：[社群最廣用策略](https://github.com/iterativv/NostalgiaForInfinity)，
+    接刀 + DCA 攤平 + 小利累積，**接刀型對照組**（73k 行第三方碼，已 vendored 進 git；ruff 對它 `extend-exclude`，不自行改動）。
+    哲學與 Donchian 相反，用來驗證「順勢 vs 接刀在當前 OKX 市場誰風險調整後報酬較佳」。看績效重淨值/回撤，不是勝率。
   - 先前的對照策略（`EmaTrendFollow`、`VolBreakout` DOGE/XRP 短線、`DonchianBreakout15m`）已移除，
     需回顧可從 git 歷史 `git show <commit>:user_data/strategies/<檔名>.py` 取回。
-- **設定**：`user_data/config.json` 是實際設定（含 API key 與帳密，已 gitignore）；
-  `config.example.json` 是可提交範本。交易所固定 `okx`、`trading_mode: spot`、`dry_run: true`。
-  改 pairlist、stake、UI 帳密都在這裡。
+- **設定**：`user_data/config.json`（主 bot）與 `user_data/config.nfi.json`（NFI 對照）是實際設定
+  （含 API key 與帳密，皆已 gitignore）；`config.example.json` 是可提交範本。交易所固定 `okx`、
+  `trading_mode: spot`、`dry_run: true`。改 pairlist、stake、UI 帳密都在這裡。
+  **真實成本設定**：config 已加 `fee: 0.001`（OKX taker）、市價單 `order_types`、`price_side: "other"`（吃買賣價差），
+  讓回測貼近實盤；高頻小利策略對成本敏感，比較時務必沿用。NFI 走限價單(其 DCA 不適合市價)，故 config.nfi.json 不設市價。
 - **資料**：下載的歷史 K 線存到 `user_data/data/okx/`（gitignore）。
-- **Web UI**：FreqUI 前端，`make trade` 或 `make webserver` 後連 `http://127.0.0.1:8080`，
-  帳密在 `config.json` 的 `api_server.username / password`。
+- **Web UI**：FreqUI 前端。本機 `make trade` / `make webserver` 連 `http://127.0.0.1:8080`；
+  常駐雙 bot `make up` 後分別連 8080（Donchian）/ 8081（NFI），帳密各在對應 config 的 `api_server`。
+  FreqUI 的 bot 連線清單存在**瀏覽器 localStorage**（非 server），故換裝置/瀏覽器要各自重加連線；
+  跨 port/跨來源連線需在目標 config 的 `CORS_origins` 加上來源(含 port)。部署細節見 `docs/DEPLOY.md`。
 
 ## 策略研究方法論
 
@@ -85,7 +93,7 @@ make clean-all                    # clean + clean-results
 
 ## 重要注意事項
 
-- **切勿提交 `config.json`**（含 API key / 帳密，已被 `.gitignore` 排除）。修改設定範本時改 `config.example.json`。
+- **切勿提交 `config.json` / `config.nfi.json`**（含 API key / 帳密，已被 `.gitignore` 排除）。修改設定範本時改 `config.example.json`。
 - 切換實盤前：OKX API key 只開「交易」權限並關閉「提現」、綁 IP 白名單、`dry_run` 改 `false`、
   先用極小額 `stake_amount` 測試、把預設 UI 密碼與 `jwt_secret_key` 換掉。
 - 新增/修改策略後務必跑 `make lookahead` 確認沒有未來函數偏誤，回測虧損屬正常現象。

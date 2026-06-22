@@ -40,3 +40,16 @@ services:
       --config /freqtrade/user_data/config.json
       --strategy DonchianBreakout
       --db-url sqlite:////freqtrade/user_data/donchian.dryrun.sqlite
+
+  # 對照組：社群最廣泛使用的 NostalgiaForInfinity（X7）。5m、VolumePairList ~60 檔 USDT。
+  # 純 dry-run 對照用，獨立錢包與 UI（8081）。策略碼為第三方（73k 行），自負風險。
+  nfi:
+    <<: *ft-common
+    container_name: ft-nfi
+    ports:
+      - "8081:8081"
+    command: >
+      trade
+      --config /freqtrade/user_data/config.nfi.json
+      --strategy NostalgiaForInfinityX7
+      --db-url sqlite:////freqtrade/user_data/nfi.dryrun.sqlite

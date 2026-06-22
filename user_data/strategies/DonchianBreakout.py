@@ -33,6 +33,7 @@ DonchianBreakout — 1h Donchian 通道突破（順勢策略）
 
 全參數化。樣本：1h，2023-12-31 → 2026-06-17（含 2024 牛市 / 2025-26 空頭）。
 """
+
 from datetime import datetime  # noqa: F401
 
 import talib.abstract as ta
@@ -68,9 +69,9 @@ class DonchianBreakout(IStrategy):
     ignore_roi_if_entry_signal = False
 
     # 可優化參數
-    buy_period = IntParameter(20, 80, default=70, space="buy")     # 突破回看週期
-    sell_period = IntParameter(10, 40, default=32, space="sell")   # 出場回看週期（較短）
-    trend_ema = IntParameter(50, 200, default=74, space="buy")    # 趨勢過濾 EMA
+    buy_period = IntParameter(20, 80, default=70, space="buy")  # 突破回看週期
+    sell_period = IntParameter(10, 40, default=32, space="sell")  # 出場回看週期（較短）
+    trend_ema = IntParameter(50, 200, default=74, space="buy")  # 趨勢過濾 EMA
     use_trend = CategoricalParameter([True, False], default=True, space="buy")
     # 熊市保護：只在大盤站上長期 SMA（多頭 regime）時才突破進場，空頭段休息避開回吐
     regime_sma = IntParameter(200, 720, default=600, space="buy")
@@ -78,8 +79,12 @@ class DonchianBreakout(IStrategy):
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         # Donchian 通道：用 shift(1) → 只看「截至前一根」的高低點，當根 close 突破才算（無未來偏誤）
-        dataframe["dc_upper"] = dataframe["high"].rolling(self.buy_period.value).max().shift(1)
-        dataframe["dc_lower"] = dataframe["low"].rolling(self.sell_period.value).min().shift(1)
+        dataframe["dc_upper"] = (
+            dataframe["high"].rolling(self.buy_period.value).max().shift(1)
+        )
+        dataframe["dc_lower"] = (
+            dataframe["low"].rolling(self.sell_period.value).min().shift(1)
+        )
         dataframe["trend_ema"] = ta.EMA(dataframe, timeperiod=self.trend_ema.value)
         dataframe["regime_sma"] = ta.SMA(dataframe, timeperiod=self.regime_sma.value)
         return dataframe
@@ -92,7 +97,9 @@ class DonchianBreakout(IStrategy):
         if self.use_trend.value:
             cond &= dataframe["close"] > dataframe["trend_ema"]  # 只順勢突破
         if self.use_regime.value:
-            cond &= dataframe["close"] > dataframe["regime_sma"]  # 熊市保護：空頭 regime 不進場
+            cond &= (
+                dataframe["close"] > dataframe["regime_sma"]
+            )  # 熊市保護：空頭 regime 不進場
         dataframe.loc[cond, ["enter_long", "enter_tag"]] = (1, "dc_breakout")
         return dataframe
 

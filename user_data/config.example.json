@@ -10,6 +10,14 @@
     "cancel_open_orders_on_exit": true,
     "trading_mode": "spot",
     "margin_mode": "",
+    "fee": 0.001,
+    "order_types": {
+        "entry": "market",
+        "exit": "market",
+        "emergency_exit": "market",
+        "stoploss": "market",
+        "stoploss_on_exchange": false
+    },
     "unfilledtimeout": {
         "entry": 10,
         "exit": 10,
@@ -17,7 +25,7 @@
         "unit": "minutes"
     },
     "entry_pricing": {
-        "price_side": "same",
+        "price_side": "other",
         "use_order_book": true,
         "order_book_top": 1,
         "price_last_balance": 0.0,
@@ -27,7 +35,7 @@
         }
     },
     "exit_pricing": {
-        "price_side": "same",
+        "price_side": "other",
         "use_order_book": true,
         "order_book_top": 1
     },
@@ -63,7 +71,10 @@
         "enable_openapi": false,
         "jwt_secret_key": "change_me_to_a_random_32char_min_secret_0123456789",
         "ws_token": "change_me_to_a_random_ws_token_string",
-        "CORS_origins": ["http://127.0.0.1:8080", "http://localhost:8080"],
+        "CORS_origins": [
+            "http://127.0.0.1:8080",
+            "http://localhost:8080"
+        ],
         "username": "freqtrader",
         "password": "CHANGE_ME"
     },
