@@ -90,8 +90,8 @@ webserver: ## 只開 Web 伺服器（回測分析用，不下單）
 
 # ---- 雲端常駐部署（Docker Compose，見 docs/DEPLOY.md）------------------------
 .PHONY: up
-up: ## 背景常駐啟動 dry-run bot（VPS 用）
-	docker compose up -d
+up: ## 背景常駐啟動 dry-run bot（VPS 用，--build 確保套用 Dockerfile 的 ccxt 修正）
+	docker compose up -d --build
 
 .PHONY: down
 down: ## 停止並移除常駐容器（sqlite 錢包保留）
