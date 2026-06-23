@@ -12,9 +12,14 @@
 # 若改回只走 SSH tunnel，把各 service 的 "8080:8080" 改成 "127.0.0.1:8080:8080"。
 
 x-ft-common: &ft-common
-  # 建議改成與本機 `uv run freqtrade --version` 相同的版本 tag 以求可重現，
-  # 例如 freqtradeorg/freqtrade:2026.5。預設用 stable。
-  image: freqtradeorg/freqtrade:stable
+  # 自建 image（見 Dockerfile）：繼承官方 freqtrade:stable 並升級 ccxt，
+  # 修正 OKX 偶發 id=None 市場資料導致 load_markets() 崩潰（keysort TypeError）的問題。
+  # 重建：docker compose up -d --build。若想回用官方 image，把這兩行換回
+  #   image: freqtradeorg/freqtrade:stable
+  build:
+    context: .
+    dockerfile: Dockerfile
+  image: freqtrade-okx:ccxt-patched
   restart: unless-stopped
   volumes:
     - ./user_data:/freqtrade/user_data
@@ -23,11 +28,12 @@ x-ft-common: &ft-common
     - FREQTRADE__API_SERVER__LISTEN_IP_ADDRESS=0.0.0.0
   # 容器健康檢查：API server 回應即視為存活
   stop_grace_period: 30s
+  # log 輪替：單檔 100m × 5 檔 ≈ 每個容器最多 ~500M。
   logging:
     driver: json-file
     options:
-      max-size: "10m"
-      max-file: "3"
+      max-size: "100m"
+      max-file: "5"
 
 services:
   donchian:
